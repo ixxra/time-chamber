@@ -3,6 +3,7 @@ import (
     "net/http"
     "io"
     "log"
+    "os"
 )
 
 func HelloServer(w http.ResponseWriter, req *http.Request) {
@@ -11,7 +12,7 @@ func HelloServer(w http.ResponseWriter, req *http.Request) {
 
 func main() {
     http.HandleFunc("/", HelloServer)
-    err := http.ListenAndServe(":8080", nil)
+    err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
     if err != nil {
         log.Fatal("ListenAndServe", err)
     }
