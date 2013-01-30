@@ -2,19 +2,27 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Olimpiadas internacionales de Física</title>
+<link type="text/css" rel="stylesheet" href="/css/olympiad.css" />
+<title>Olimpiadas de Física</title>
 </head>
 <body>
 {{template "navbar"}}
-<nav id="collection">
+<nav id="collection">	
 <ul>
-{{range .iphoMeta}}
-<li>{{.Year}} {{.City}} - {{.Country}}</li>
+{{$coll := .Collection}}
+{{range .Olympiads}}
+<li><a href="/olympiad?collection={{$coll}}&document={{.Year}}">{{.Year}} {{.City}} - {{.Country}}</a></li>
 {{end}}
 </ul>
 </nav>
-<section id="document">
-EXAM HERE
-</section>
+<article id="document">
+	<header>
+		<h1>Olimpiada de {{.Document.Year}}, {{.Document.City}}, {{.Document.Country}}</h1>
+	</header>
+<a href="/data/olympiads/{{.Collection}}/ipho{{.Document.Year}}.pdf">{{.Document.Year}}</a>
+<iframe src="http://docs.google.com/gview?url=https://github.com/ixxra/time-chamber/tree/master/data/olympiads/{{.Collection}}/ipho{{.Document.Year}}"&embedded="true" style="width:800px; height:600px;" frameborder="0">
+	Your browser does not support embedded content
+</iframe>
+</article>
 </body>
 </html>

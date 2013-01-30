@@ -2,16 +2,17 @@ package main
 
 import (
 	"fmt"
-//	"encoding/csv"
-	"log"
 	"net/http"
-//	"os"
 	"labix.org/v2/mgo"
 	"strconv"
-//    "labix.org/v2/mgo/bson"	
+	"html/template"
+//   "labix.org/v2/mgo/bson"	
 )
 
 const DB_LOCATION = "localhost:27017"
+const DATABASE = "physicsolympiad"
+
+type dict map[string] interface{}
 
 type Olympiad struct {
 	Year int64  `year`
@@ -22,80 +23,51 @@ type Olympiad struct {
 func olympiadHandler(w http.ResponseWriter, req *http.Request) {
 	err := req.ParseForm()
 	if err != nil {
-		log.Print("olympiadHandler", err.Error())
-		fmt.Fprintln(w, "Error:", err.Error())
+		fmt.Fprintln(w, "ParseForm:", err)
 		return
 	}
 
 	collection := req.FormValue("collection")
-	document, _ := strconv.ParseInt(req.FormValue("document"), 10, 0)
+	document, err := strconv.ParseInt(req.FormValue("document"), 10, 0)
 
-	fmt.Fprintln(w, "collection:", collection, "& document:", document)
+	if err != nil {
+		fmt.Fprintln(w, "ParseInt:", err)
+		return
+	}
 
 	session, err := mgo.Dial(DB_LOCATION)
 	if err != nil {
-		fmt.Fprintln(w, "Error:", err)
+		fmt.Fprintln(w, "Dial:", err)
         return
 	}
 
 	defer session.Close()
 	
-	c := session.DB("test").C(collection)
-	
-	n, _ := c.Count()
-	fmt.Fprintln(w, n, "documents in collection")
+	c := session.DB(DATABASE).C(collection)
 	
 	var olympiads []Olympiad
 	err = c.Find(nil).Limit(100).All(&olympiads)
 	//err = c.Find(bson.M{"year":1998}).Limit(100).All(result)
 	
 	if err != nil {
-		fmt.Fprintln(w, "error", err)
+		fmt.Fprintln(w, "Find:", err)
 		return
 	}
 	
-	fmt.Fprintln(w, olympiads)
-	
 	var this Olympiad
 	
-	for _, v := range olympiads {
-		if v.Year == document {
-			this = v
+	for _, olympiad := range olympiads {
+		if olympiad.Year == document {
+			this = olympiad
 		}
 	}
 
-	fmt.Fprintln(w, document, ":", this)
-
-//	target := "data/olympiads/" + collection + ".csv"
-//	
-//	file, err := os.Open(target)
-//    if err != nil {
-//        fmt.Fprintln(w, "Error:", err)
-//        return
-//    }
-//    defer file.Close()
-//    
-//    reader := csv.NewReader(file)
-//    records, err := reader.ReadAll()
-//    olympiads := make ([]IntOlympiad, len(records))
-//    
-//    var this Olympiad 
-//    
-//    for i, record := range records {
-//        _this := Olympiad {
-//        	Year: record[0],
-//        	City: record[1],
-//        	Country: record[2],
-//        }
-//        
-//        olympiads[i] = _this
-//        
-//        if _this.Year == document {
-//        	this = _this
-//        }
-//    }
-//    
-//    fmt.Fprintln(w, olympiads)
-//    fmt.Fprintln(w, this)
+	tmpl := template.Must(template.ParseFiles("templates/olympiad.html", "templates/navbar.html"))
+	err = tmpl.Execute(w, dict {"Collection": collection ,"Olympiads": olympiads, "Document": this})
+	
+	if err != nil {
+		fmt.Fprintln(w, "Execute:", err)
+		return
+	}
 }
 
