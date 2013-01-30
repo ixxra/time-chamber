@@ -1,0 +1,37 @@
+#collection {
+	background-color: #F2F7FF;
+	float: left;  
+}
+
+#collection ul {
+	list-style-type:none;
+	margin:0;
+	padding:0;
+}
+
+#collection li:nth-child(2n) {
+	background-color: #D7D7FF;
+}
+
+#document {
+	float: left;
+	background-color: #F2F7FF;
+}
+
+#document header {
+	background-color: Green;
+	text-align: center;
+}
+
+nav a:hover,nav a:active {
+	font-weight: bold;
+}
+
+a {
+  text-decoration: none;
+  color: Black;  
+}
+
+section {
+  margin: 0 5%;  
+}
