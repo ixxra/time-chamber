@@ -1,3 +1,11 @@
+#topbar ul{
+	list-style-type: none;	
+}
+
+#topbar li {
+	display: block;
+}
+
 #collection {
 	background-color: #F2F7FF;
 	float: left;  
@@ -19,7 +27,6 @@
 }
 
 #document header {
-	background-color: Green;
 	text-align: center;
 }
 
