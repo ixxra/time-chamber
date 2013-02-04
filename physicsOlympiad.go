@@ -12,7 +12,7 @@ import (
 
 const (
 	DB_LOCAL = "localhost"
-	DB_HOST  = "mongodb://timeChamber:123456@linus.mongohq.com:10029/physicsolympiad"
+	DB_HOST  = "mongodb://<user>:<password>@linus.mongohq.com:10029/physicsolympiad"
 	DATABASE = "physicsolympiad"
 )
 
