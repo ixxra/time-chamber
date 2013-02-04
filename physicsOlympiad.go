@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"strconv"
 
-   //"labix.org/v2/mgo/bson"	
+	//"labix.org/v2/mgo/bson"	
 )
 
 const (
 	DB_LOCAL = "localhost"
-	DB_HOST  = "mongodb://timeChamber:123456@linus.mongohq.com:10086/physicsolympiad"
+	DB_HOST  = "mongodb://timeChamber:123456@linus.mongohq.com:10029/physicsolympiad"
 	DATABASE = "physicsolympiad"
 )
 
@@ -28,6 +28,7 @@ type Category struct {
 	Name       string `name`
 	Collection string `collection`
 	ShortName  string `shortName`
+	ExamPrefix string `examPrefix`
 }
 
 func olympiadHandler(w http.ResponseWriter, req *http.Request) {
@@ -38,11 +39,21 @@ func olympiadHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	collection := req.FormValue("collection")
-	document, err := strconv.ParseInt(req.FormValue("document"), 10, 0)
 
-	if err != nil {
-		fmt.Fprintln(w, "ParseInt:", err)
-		return
+	if collection == "" {
+		collection = "iphos"
+	}
+
+	document := req.FormValue("document")
+	var year int64
+	if document == "" {
+		year = 0
+	} else {
+		year, err = strconv.ParseInt(document, 10, 0)
+
+		if err != nil {
+			year = 0
+		}
 	}
 
 	session, err := mgo.Dial(DB_HOST)
@@ -56,7 +67,7 @@ func olympiadHandler(w http.ResponseWriter, req *http.Request) {
 	c := session.DB(DATABASE).C(collection)
 
 	var olympiads []Olympiad
-	err = c.Find(nil).Limit(100).All(&olympiads)
+	err = c.Find(nil).Sort("-$natural").Limit(100).All(&olympiads)
 	//err = c.Find(bson.M{"year":1998}).Limit(100).All(&olympiads)
 
 	if err != nil {
@@ -67,9 +78,13 @@ func olympiadHandler(w http.ResponseWriter, req *http.Request) {
 	var this Olympiad
 
 	for _, olympiad := range olympiads {
-		if olympiad.Year == document {
+		if olympiad.Year == year {
 			this = olympiad
 		}
+	}
+
+	if year == 0 {
+		this = olympiads[0]
 	}
 
 	var categories []Category
@@ -80,14 +95,23 @@ func olympiadHandler(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintln(w, "Find categories:", err)
 		return
 	}
-	
-	data := dict{
-		"Collection": collection, 
-		"Olympiads":  olympiads, 
-		"Document":   this, 
-		"Categories": categories,
+
+	var prefix string
+
+	for _, v := range categories {
+		if v.Collection == collection {
+			prefix = v.ExamPrefix
+		}
 	}
-	
+
+	data := dict{
+		"Collection": collection,
+		"Olympiads":  olympiads,
+		"Document":   this,
+		"Categories": categories,
+		"ExamPrefix": prefix,
+	}
+
 	tmpl := template.Must(template.ParseFiles("templates/olympiad.html", "templates/categories.html"))
 	err = tmpl.Execute(w, data)
 
