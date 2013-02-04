@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-//   "labix.org/v2/mgo/bson"	
+   //"labix.org/v2/mgo/bson"	
 )
 
 const (
@@ -22,6 +22,12 @@ type Olympiad struct {
 	Year    int64  `year`
 	City    string `city`
 	Country string `country`
+}
+
+type Category struct {
+	Name       string `name`
+	Collection string `collection`
+	ShortName  string `shortName`
 }
 
 func olympiadHandler(w http.ResponseWriter, req *http.Request) {
@@ -51,10 +57,10 @@ func olympiadHandler(w http.ResponseWriter, req *http.Request) {
 
 	var olympiads []Olympiad
 	err = c.Find(nil).Limit(100).All(&olympiads)
-	//err = c.Find(bson.M{"year":1998}).Limit(100).All(result)
+	//err = c.Find(bson.M{"year":1998}).Limit(100).All(&olympiads)
 
 	if err != nil {
-		fmt.Fprintln(w, "Find:", err)
+		fmt.Fprintln(w, "Find olympiad:", err)
 		return
 	}
 
@@ -66,8 +72,24 @@ func olympiadHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	tmpl := template.Must(template.ParseFiles("templates/olympiad.html", "templates/navbar.html"))
-	err = tmpl.Execute(w, dict{"Collection": collection, "Olympiads": olympiads, "Document": this})
+	var categories []Category
+	c = session.DB(DATABASE).C("categories")
+	err = c.Find(nil).All(&categories)
+
+	if err != nil {
+		fmt.Fprintln(w, "Find categories:", err)
+		return
+	}
+	
+	data := dict{
+		"Collection": collection, 
+		"Olympiads":  olympiads, 
+		"Document":   this, 
+		"Categories": categories,
+	}
+	
+	tmpl := template.Must(template.ParseFiles("templates/olympiad.html", "templates/categories.html"))
+	err = tmpl.Execute(w, data)
 
 	if err != nil {
 		fmt.Fprintln(w, "Execute:", err)

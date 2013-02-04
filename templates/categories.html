@@ -1,0 +1,9 @@
+{{define "categories"}}
+<nav id="categoriesBar">
+	<ul>
+	{{range .}}
+	<li><a href="/olympiad?collection={{.Collection}}">{{.Name}}</a></li>
+	{{end}}
+	</ul>
+</nav>
+{{end}}

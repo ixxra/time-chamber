@@ -6,6 +6,16 @@
 	display: block;
 }
 
+#categoriesBar ul{
+	list-style-type: none;	
+}
+
+#categoriesBar li {
+	display: block;
+	padding: 10px;
+	float:left;
+}
+
 #collection {
 	background-color: #F2F7FF;
 	float: left;  
